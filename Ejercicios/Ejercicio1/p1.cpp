@@ -17,6 +17,13 @@ struct Vector2D
         return *this;
     }
 
+    Vector2D<T> operator+(const Vector2D<T>& rhs)
+    {
+        x += rhs.x;
+        y += rhs.y;
+        return *this;
+    }
+
     Vector2D<T>& operator*=(const T scale)
     {
         x *= scale;
@@ -24,12 +31,27 @@ struct Vector2D
         return *this;
     }
 
-    void operator*(const T scale)
+    Vector2D<T> operator*(const T scale)
     {
-        x *= scale;
-        y *= scale;
+        T X = x * scale;
+        T Y = y * scale;
+        return Vector2D<T>{X,Y};
     }
+
+    Vector2D<T> operator-(const Vector2D<T>& rhs)
+    {
+        x -= rhs.x;
+        y -= rhs.y;
+        return *this;
+    }
+
 };
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Vector2D<T>& vec)
+{
+    return os << "( " << vec.x << " , " << vec.y << " )";
+}
 
 template <typename T>
 class BoundingBox {
