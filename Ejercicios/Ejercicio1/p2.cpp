@@ -28,14 +28,19 @@ class Actor {
         }
 
         void update(double dt) {
-            std::cout << posicion2D << std::endl;
-            std::cout << velocidad2D*dt << std::endl;
+            // std::cout << posicion2D << std::endl;
+            // std::cout << velocidad2D*dt << std::endl;
             posicion2D += velocidad2D*dt;
+            bounding_box.setLDCorner(bounding_box.getLDCorner() + velocidad2D*dt);
+            bounding_box.setTRCorner(bounding_box.getTRCorner() + velocidad2D*dt);
         }
+
+        const Vector2D<T>& getPos() const { return posicion2D; }
 
         const BoundingBox<T>& getBoundingBox() const {
             return bounding_box;
         }
+        
 
     private:
         Vector2D<T> posicion2D;
@@ -46,10 +51,10 @@ class Actor {
 
 
 template <typename T>
-bool pointInSquare(T xleft, T xright, T ybottom, T ytop, T x, T y) {
-    return (xleft <= x && x <= xright) && (ybottom <= y && y <= ytop);
+std::ostream& operator<<(std::ostream& os, const Actor<T>& actor)
+{
+    return os << "Pos:" << actor.getPos() << " , Bounding Box -" << actor.getBoundingBox();
 }
-
 
 template <typename T>
 bool boxesCollision(BoundingBox<T> box1, BoundingBox<T> box2) {
@@ -63,25 +68,35 @@ bool boxesCollision(BoundingBox<T> box1, BoundingBox<T> box2) {
     T min2x = LD2.x, min2y = LD2.y;
     T max2x = TR2.x, max2y = TR2.y;
 
-    return pointInSquare(min1x, max1x, min1y, max1y, min2x, min2y) ||
-            pointInSquare(min1x, max1x, min1y, max1y, max2x, min2y) ||
-            pointInSquare(min1x, max1x, min1y, max1y, max2x, max2y) ||
-            pointInSquare(min1x, max1x, min1y, max1y, min2x, max2y) ||
-            pointInSquare(min2x, max2x, min2y, max2y, min1x, min1y) ||
-            pointInSquare(min2x, max2x, min2y, max2y, max1x, min1y) ||
-            pointInSquare(min2x, max2x, min2y, max2y, max1x, max1y) ||
-            pointInSquare(min2x, max2x, min2y, max2y, min1x, max1y);
+    bool top12 = max1y >= max2y && max2y >= min1y;
+    bool top21 = max2y >= max1y && max1y >= min2y;
+    bool side12 = max1x >= max2x && max2y >= min1x;
+    bool side21 = max2x >= max1x && max1x >= min2x;
+
+    bool topAndSide1 = top12 && side12;
+    bool topAndSide2 = top12 && side21;
+    bool topAndSide3 = top21 && side12;
+    bool topAndSide4 = top21 && side21;
+
+    return topAndSide1 || topAndSide2 || topAndSide3 || topAndSide4;
+}
+
+template <typename T>
+bool actorsCollide(Actor<T>& actor1, Actor<T>& actor2) {
+    BoundingBox<T> b1 = actor1.getBoundingBox(), b2 = actor2.getBoundingBox();
+    return boxesCollision(b1, b2);
 }
 
 int main() {
     Actor<double> actor1({5.0, 0.0}, {-1.0, 0.0}), actor2({-5.0, 0.0}, {1.0, 0.0});
-    BoundingBox<double> b1 = actor1.getBoundingBox(), b2 = actor2.getBoundingBox();
-    while (!boxesCollision(b1, b2)) {
-        // std::cout << b1.getLDCorner() << " " << b2.getLDCorner();
+    while (!actorsCollide(actor1, actor2)) {
+        std::cout << "actor1 " << actor1 << std::endl;
+        std::cout << "actor2 " << actor2 << std::endl;
         actor1.update(0.5);
         actor2.update(0.5);
-        b1 = actor1.getBoundingBox(), b2 = actor2.getBoundingBox();
     }
-    std::cout << "actor" << std::endl;
+    std::cout << "actor1 " << actor1 << std::endl;
+    std::cout << "actor2 " << actor2 << std::endl;
+    std::cout << "Bounding Boxes Collided!" << std::endl;
     return 0;
 }

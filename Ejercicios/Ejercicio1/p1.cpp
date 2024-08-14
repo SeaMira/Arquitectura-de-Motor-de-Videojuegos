@@ -17,11 +17,9 @@ struct Vector2D
         return *this;
     }
 
-    Vector2D<T> operator+(const Vector2D<T>& rhs)
+    Vector2D<T> operator+(const Vector2D<T>& rhs) const
     {
-        x += rhs.x;
-        y += rhs.y;
-        return *this;
+        return {x + rhs.x, y + rhs.y};
     }
 
     Vector2D<T>& operator*=(const T scale)
@@ -40,9 +38,7 @@ struct Vector2D
 
     Vector2D<T> operator-(const Vector2D<T>& rhs)
     {
-        x -= rhs.x;
-        y -= rhs.y;
-        return *this;
+        return {x - rhs.x, y - rhs.y};
     }
 
 };
@@ -86,6 +82,12 @@ class BoundingBox {
     private: 
         Vector2D<T> LDCorner, TRCorner;
 };
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const BoundingBox<T>& box)
+{
+    return os << "Left Down Corner:" << box.getLDCorner() << " , Right Top Corner:" << box.getTRCorner();
+}
 
 template<typename T> 
 void enclose(BoundingBox<T>& box, Vector2D<T>& vec) {
